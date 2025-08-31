@@ -14,6 +14,7 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
+    --color-maincolor: var(--maincolor);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
 
@@ -85,6 +86,7 @@
 }
 
 :root {
+    --maincolor: hsl(0 100% 70%);
     --background: hsl(0 0% 100%);
     --foreground: hsl(0 0% 3.9%);
     --card: hsl(0 0% 100%);
@@ -122,6 +124,7 @@
 }
 
 .dark {
+    --maincolor: hsl(0 0% 0%);
     --background: hsl(0 0% 3.9%);
     --foreground: hsl(0 0% 98%);
     --card: hsl(0 0% 3.9%);

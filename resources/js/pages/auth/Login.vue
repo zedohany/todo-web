@@ -97,7 +97,7 @@ defineProps<{
             </Form>
         </div>
         <div class="md:block hidden">
-            <img src="/assets/img.png" class="w-[850px]" alt="Img" />
+            <img src="/assets/login.svg" class="w-[850px]" alt="Img" />
         </div>
 
         </div>

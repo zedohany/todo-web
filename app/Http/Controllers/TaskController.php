@@ -15,7 +15,11 @@ class TaskController extends Controller
      */
     public function index()
     {
-        //
+        $tasks = Task::where('user_id', auth()->id())->with(['priority', 'category'])->get();
+
+        return Inertia::render('task/Index')->with([
+            'tasks' => $tasks,
+        ]);
     }
 
     /**

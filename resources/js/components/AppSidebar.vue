@@ -3,7 +3,8 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { dashboard, vital, tasks } from '@/routes';
+import { dashboard, vital } from '@/routes';
+import { index } from '@/routes/tasks';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, WandSparkles, ClipboardCheck } from 'lucide-vue-next';
@@ -22,7 +23,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'My Task',
-        href: tasks(),
+        href: index(),
         icon: ClipboardCheck,
     }
 ];

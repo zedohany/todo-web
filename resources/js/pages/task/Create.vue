@@ -2,8 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
 import type { BreadcrumbItem } from '@/types';
-import { dashboard, tasks } from '@/routes';
-import { create } from '@/routes/tasks';
+import { dashboard } from '@/routes';
+import { index, create } from '@/routes/tasks';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from "@/components/ui/textarea"
@@ -18,6 +18,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { toast } from "vue-sonner";
+import Heading from '@/components/Heading.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'My Tasks',
-        href: tasks().url, // Assuming there's a tasks listing page
+        href: index().url, // Assuming there's a tasks listing page
     },
     {
         title: 'Create Task',
@@ -59,7 +60,6 @@ function randomRgbColor() {
     return [r, g, b];
 }
 
-
 function randomHexColor() {
     let [r, g, b] = randomRgbColor();
     let hr = r.toString(16).padStart(2, '0');
@@ -67,7 +67,6 @@ function randomHexColor() {
     let hb = b.toString(16).padStart(2, '0');
     return "#" + hr + hg + hb;
 }
-
 
 // const priorities = [
 //     { id: 1, name: 'High' },
@@ -117,13 +116,8 @@ const submitForm = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-col gap-4 p-4">
             <!-- Header -->
-            <div class="text-center sm:text-left">
-                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                    Add New Task
-                </h1>
-                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-                    Fill in the details to create a new task
-                </p>
+            <div class="text-center sm:text-left -mb-8">
+                <Heading title="Add New Task" description="Fill in the details to create a new task"  />
             </div>
 
             <!-- Main Form Container -->

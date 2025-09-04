@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Priority;
+use App\Models\Category;
 
 class RegisteredUserController extends Controller
 {
@@ -41,6 +43,15 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        Priority::create(['name' => 'Low', 'color' => '#00FF00', 'user_id' => $user->id]);
+        Priority::create(['name' => 'Medium', 'color' => '#FFA500', 'user_id' => $user->id]);
+        Priority::create(['name' => 'High', 'color' => '#FF0000', 'user_id' => $user->id]);
+
+
+        Category::create(['name' => 'Personal', 'user_id' => $user->id]);
+        Category::create(['name' => 'Work', 'user_id' => $user->id]);
+        Category::create(['name' => 'School', 'user_id' => $user->id]);
 
         event(new Registered($user));
 

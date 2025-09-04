@@ -2,7 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
-import { dashboard } from '@/routes';
+import { dashboard, tasks } from '@/routes';
+import { create } from '@/routes/tasks';
 import { Link } from '@inertiajs/vue3';
 import {
     Card,
@@ -21,8 +22,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
     {
-        title: 'My Task',
-        href: 'mytask',
+        title: 'My Tasks',
+        href: tasks().url,
     }
 ];
 </script>
@@ -38,7 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <CardHeader>
                         <CardTitle class="flex gap-1 items-center"><ClipboardCheck /><span>My Tasks</span>
                             <!--suppress HtmlUnknownTarget -->
-                            <Link class="ml-auto" href="tasks/create">
+                            <Link class="ml-auto" :href="create().url">
                                 <Button variant="outline"><Plus />Add Task</Button>
                             </Link>
                         </CardTitle>

@@ -2,7 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, usePage, useForm } from '@inertiajs/vue3';
 import type { BreadcrumbItem } from '@/types';
-import { dashboard } from '@/routes';
+import { dashboard, tasks } from '@/routes';
+import { create } from '@/routes/tasks';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from "@/components/ui/textarea"
@@ -23,6 +24,14 @@ const breadcrumbs: BreadcrumbItem[] = [
         title: 'Dashboard',
         href: dashboard().url,
     },
+    {
+        title: 'My Tasks',
+        href: tasks().url, // Assuming there's a tasks listing page
+    },
+    {
+        title: 'Create Task',
+        href: create().url,
+    }
 ];
 
 const page = usePage();

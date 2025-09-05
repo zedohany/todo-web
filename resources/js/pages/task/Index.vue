@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, usePage, router } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
 import { index } from '@/routes/tasks';
-import { create } from '@/routes/tasks';
+import { create, updateStatus } from '@/routes/tasks';
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import {
     Card,
     CardContent,
@@ -13,9 +14,27 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Ellipsis, Trash, FilePenLine, ClipboardCheck, Plus, Images } from 'lucide-vue-next';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import {
+    Ellipsis,
+    Trash,
+    FilePenLine,
+    ClipboardCheck,
+    Plus,
+    Images,
+    Clipboard,
+    Calendar,
+    Clock,
+    Eye
+} from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Heading from '@/components/Heading.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,147 +42,273 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
     {
-        title: 'My Tasks',
+        title: 'Tasks',
         href: index().url,
     }
 ];
 
 const page = usePage();
-const tasks = page.props.tasks as Array<{
-    id: number; title: string; description: string; created_at: string; deadline: string; status: string; image: string;
-    priority: { id: number; name: string; color: string; };
-    category: {
-        id: number; name: string;
 
-    };
-}>;
+const tasks = computed(() => {
+    const taskList = page.props.tasks as Array<{
+        id: number;
+        title: string;
+        description: string;
+        created_at: string;
+        deadline: string;
+        status: string;
+        image: string;
+        priority: { id: number; name: string; color: string };
+        category: { id: number; name: string };
+    }>;
+
+    // Sort tasks from newest to oldest
+    return taskList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+});
 
 function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 }
 
-function randomInteger(max :number) {
-    return Math.floor(Math.random() * (max + 1));
+function isOverdue(deadline: string) {
+    return new Date(deadline) < new Date() && new Date().getTime() - new Date(deadline).getTime() > 0;
 }
 
-function randomRgbColor() {
-    let r = randomInteger(255);
-    let g = randomInteger(255);
-    let b = randomInteger(255);
-    return [r, g, b];
+function getDaysRemaining(deadline: string) {
+    const diff = new Date(deadline).getTime() - new Date().getTime();
+    const days = Math.ceil(diff / (1000 * 3600 * 24));
+    return days;
 }
 
-function randomHexColor() {
-    let [r, g, b] = randomRgbColor();
-    let hr = r.toString(16).padStart(2, '0');
-    let hg = g.toString(16).padStart(2, '0');
-    let hb = b.toString(16).padStart(2, '0');
-    return "#" + hr + hg + hb;
-}
+const makeComplete = (id: number) => {
+    router.put(updateStatus(id).url, {}, {
+        preserveScroll: true,
+    });
+};
+
+const getStatusVariant = (status: string) => {
+    const variants: { [key: string]: string } = {
+        'open': 'secondary',
+        'completed': 'default',
+        'closed': 'destructive'
+    };
+
+    return variants[status] || 'secondary';
+};
 </script>
 
 <template>
-
-    <Head title="My Task" />
+    <Head title="My Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4">
-            <div class="flex flex-col gap-6 sm:flex-row sm:gap-4">
-                <!-- Card 1: My Tasks -->
-                <Card class="w-full sm:w-1/2">
-                    <CardHeader>
-                        <CardTitle class="flex gap-1 items-center">
-                            <ClipboardCheck /><span>My Tasks</span>
-                            <!--suppress HtmlUnknownTarget -->
-                            <Link class="ml-auto" :href="create().url">
-                            <Button variant="outline">
-                                <Plus />Add Task
-                            </Button>
-                            </Link>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Card v-for="task in tasks" :key="task.id" class="mb-4">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2 text-base sm:text-lg">
-                                    <div class="w-[14px] h-[15px] rounded-full border-3"
-                                        style="box-sizing: border-box;" :style="{borderColor: task.priority.color}" />
-                                    <span class="flex-1">
-                                        {{ task.title }}
-                                    </span>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger class="flex items-center gap-1">
-                                            <Ellipsis class="h-5 w-5" />
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start">
-                                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem>Delete</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent class="flex flex-col sm:flex-row gap-4">
-                                <p class="text-sm text-muted-foreground flex-1 line-clamp-4">
-                                    {{ task.description }}
-                                </p>
-                                <img v-if="task.image" class="w-full sm:w-24 h-24 rounded-xl object-cover"
-                                    :src="task.image" :alt="task.title" />
-                                <div v-else
-                                    class="w-full sm:w-24 h-24 rounded-xl bg-gray-200 flex items-center justify-center text-gray-500">
-                                    <Images class="w-10 h-10" />
-                                </div>
-                            </CardContent>
-                            <CardFooter
-                                class="flex flex-col gap-2 sm:items-center sm:justify-between text-sm sm:text-base">
-                                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                                    <p class="font-medium">Priority: <span :style="{color: task.priority.color}">{{
-                                        task.priority.name }}</span></p>
-                                    <p class="font-medium">Status: <span class="text-[#F21E1E]">
-                                            {{ task.status }}</span></p>
-                                </div>
-                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-muted-foreground">
-                                    <p>Created on: {{ formatDate(task.created_at) }}</p>
-                                    <p>Deadline on: {{ formatDate(task.deadline) }}</p>
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </CardContent>
-                </Card>
+        <div class="min-h-screen p-4">
+            <div>
+                <!-- Header Section -->
+                <div>
+                    <div class="flex justify-between">
+                        <Heading class="-mb-8" title="My Tasks" description="Manage and track your tasks efficiently" />
+                        <Link :href="create().url">
+                        <Button size="lg">
+                            <Plus class="w-5 h-5 mr-2" />
+                            Add New Task
+                        </Button>
+                        </Link>
+                    </div>
+                </div>
 
-                <!-- Card 2: Walk the Dog -->
-                <Card class="w-full sm:w-1/2">
-                    <CardContent class="h-full flex flex-col gap-4">
-                        <div class="flex flex-col sm:flex-row items-center gap-4">
-                            <img class="w-full sm:w-40 h-40 rounded-lg object-cover"
-                                src="https://i.pravatar.cc/500?img=1" alt="Img Avatar" />
-                            <div class="flex flex-col gap-2 text-center sm:text-left">
-                                <p class="text-lg sm:text-2xl font-bold">
-                                    Walk the dog
-                                </p>
-                                <p>Priority: <span class="text-[#42ADE2]">Extreme</span></p>
-                                <p>Status: <span class="text-[#F21E1E]">Not Started</span></p>
-                                <p class="text-muted-foreground">Created on: 20/06/2023</p>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card>
+                        <CardHeader>
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-blue-100 rounded-full">
+                                    <Clipboard class="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">{{ tasks.length }}</p>
+                                    <p class="text-muted-foreground">Total Tasks</p>
+                                </div>
+                            </div>
+                        </CardHeader>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-green-100 rounded-full">
+                                    <ClipboardCheck class="w-6 h-6 text-green-600" />
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">{{tasks.filter(t => t.status === 'completed').length
+                                        }}</p>
+                                    <p class="text-muted-foreground">Completed</p>
+                                </div>
+                            </div>
+                        </CardHeader>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-orange-100 rounded-full">
+                                    <Clock class="w-6 h-6 text-orange-600" />
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">{{tasks.filter(t => t.status === 'open').length}}
+                                    </p>
+                                    <p class="text-muted-foreground">Open</p>
+                                </div>
+                            </div>
+                        </CardHeader>
+                    </Card>
+                </div>
+
+                <!-- Tasks Grid -->
+                <div v-if="tasks.length > 0" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <Card v-for="task in tasks" :key="task.id">
+                        <!-- Task Image/Icon -->
+                        <div class="relative h-48 -mt-6 overflow-hidden rounded-t-lg group">
+                            <img v-if="task.image" :src="task.image" :alt="task.title"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div v-else
+                                class="w-full h-full bg-muted flex items-center justify-center">
+                                <Images class="w-16 h-16 dark:text-white opacity-60" />
+                            </div>
+
+                            <!-- Priority Badge -->
+                            <div class="absolute top-3 left-3">
+                                <Badge variant="outline"
+                                    :style="{ backgroundColor: task.priority.color, color: 'white', borderColor: task.priority.color }"
+                                    class="px-3 py-1 font-bold shadow-lg">
+                                    {{ task.priority.name }}
+                                </Badge>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <div class="absolute top-3 right-3">
+                                <Badge :variant="getStatusVariant(task.status)" class="px-3 py-1 font-bold shadow-lg">
+                                    {{ task.status }}
+                                </Badge>
+                            </div>
+
+                            <!-- Dropdown Menu -->
+                            <div class="absolute bottom-3 right-3">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button size="sm">
+                                            <Ellipsis class="w-4 h-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" class="w-48">
+                                        <DropdownMenuItem v-if="task.status === 'open'" @click="makeComplete(task.id)"
+                                            class="cursor-pointer">
+                                            <ClipboardCheck class="w-4 h-4 mr-2" />
+                                            Mark as Complete
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem class="cursor-pointer">
+                                            <Eye class="w-4 h-4 mr-2" />
+                                            View Details
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem class="cursor-pointer">
+                                            <FilePenLine class="w-4 h-4 mr-2" />
+                                            Edit Task
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem class="cursor-pointer text-destructive">
+                                            <Trash class="w-4 h-4 mr-2" />
+                                            Delete Task
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <p class="text-sm sm:text-base">
-                                Listen to a podcast or audiobook, practice mindfulness or meditation, take photos of
-                                interesting sights along the way, practice obedience training with your dog, chat with
-                                neighbors or other dog walkers, listen to music or an upbeat playlist.
+
+                        <!-- Task Content -->
+                        <CardHeader class="pb-3">
+                            <CardTitle>
+                                {{ task.title }}
+                            </CardTitle>
+                        </CardHeader>
+
+                        <CardContent class="py-0">
+                            <p class=" text-sm leading-relaxed line-clamp-3 mb-4">
+                                {{ task.description }}
                             </p>
+
+                            <!-- Category -->
+                            <div class="flex items-center gap-2 mb-4">
+                                <Badge variant="outline" class="text-xs">
+                                    {{ task.category.name }}
+                                </Badge>
+                            </div>
+                        </CardContent>
+
+                        <CardFooter class="pt-4 mt-auto border-t">
+                            <div class="w-full space-y-3">
+                                <!-- Dates -->
+                                <div class="grid grid-cols-1 gap-2 text-xs">
+                                    <div class="flex items-center gap-2 text-muted-foreground">
+                                        <Calendar class="w-4 h-4" />
+                                        <span>Created: {{ formatDate(task.created_at) }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2"
+                                        :class="isOverdue(task.deadline) && task.status === 'open' ? 'text-destructive' : 'text-muted-foreground'">
+                                        <Clock class="w-4 h-4" />
+                                        <span>Deadline: {{ formatDate(task.deadline) }}</span>
+                                        <Badge v-if="task.status === 'open'" variant="outline" class="text-xs px-2 py-1"
+                                            :class="getDaysRemaining(task.deadline) < 0 ? 'border-destructive text-destructive' : getDaysRemaining(task.deadline) <= 3 ? 'border-yellow-500 text-yellow-600' : 'border-green-500 text-green-600'">
+                                            {{ getDaysRemaining(task.deadline) < 0 ?
+                                                `${Math.abs(getDaysRemaining(task.deadline))} days overdue` :
+                                                getDaysRemaining(task.deadline)===0 ? 'Due today' :
+                                                `${getDaysRemaining(task.deadline)} days left` }} </Badge>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardFooter>
+                    </Card>
+                </div>
+
+                <!-- Empty State -->
+                <Card v-else class="bg-white border-0 shadow-lg">
+                    <CardContent class="py-16">
+                        <div class="text-center space-y-6">
+                            <div class="mx-auto w-32 h-32 bg-muted rounded-full flex items-center justify-center">
+                                <Clipboard class="w-16 h-16 text-muted-foreground" />
+                            </div>
+                            <div class="space-y-2">
+                                <h3 class="text-2xl font-bold text-foreground">No tasks yet</h3>
+                                <p class="text-muted-foreground text-lg max-w-md mx-auto">
+                                    Get started by creating your first task
+                                </p>
+                            </div>
+                            <Link :href="create().url">
+                            <Button size="lg" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg">
+                                <Plus class="w-5 h-5 mr-2" />
+                                Add New Task
+                            </Button>
+                            </Link>
                         </div>
                     </CardContent>
-                    <CardFooter class="gap-2 justify-end">
-                        <Button variant="destructive">
-                            <Trash class="h-5 w-5" />
-                        </Button>
-                        <Button variant="outline">
-                            <FilePenLine class="h-5 w-5" />
-                        </Button>
-                    </CardFooter>
                 </Card>
             </div>
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

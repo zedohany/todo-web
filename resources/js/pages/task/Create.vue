@@ -26,8 +26,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
     {
-        title: 'My Tasks',
-        href: index().url, // Assuming there's a tasks listing page
+        title: 'Tasks',
+        href: index().url,
     },
     {
         title: 'Create Task',
@@ -49,7 +49,7 @@ const form = useForm({
     image: null as File | null,
 });
 
-function randomInteger(max :number) {
+function randomInteger(max: number) {
     return Math.floor(Math.random() * (max + 1));
 }
 
@@ -89,7 +89,7 @@ const handleImageUpload = (event: Event) => {
 const submitForm = () => {
     form.post('/tasks/create', {
         onSuccess: () => {
-            toast('Task has been created', {
+            toast.success('Task has been created', {
                 description: 'The good news is that your task has been created successfully.',
                 action: {
                     label: 'Close',
@@ -117,7 +117,7 @@ const submitForm = () => {
         <div class="flex h-full flex-col gap-4 p-4">
             <!-- Header -->
             <div class="text-center sm:text-left -mb-8">
-                <Heading title="Add New Task" description="Fill in the details to create a new task"  />
+                <Heading title="Add New Task" description="Fill in the details to create a new task" />
             </div>
 
             <!-- Main Form Container -->
@@ -232,7 +232,8 @@ const submitForm = () => {
                                             <SelectItem v-for="category in categories" :key="category.id"
                                                 :value="category.id.toString()">
                                                 <div class="flex items-center gap-2">
-                                                    <div class="w-3 h-3 rounded-sm" :style="{ backgroundColor: randomHexColor() }"></div>
+                                                    <div class="w-3 h-3 rounded-sm"
+                                                        :style="{ backgroundColor: randomHexColor() }"></div>
                                                     {{ category.name }}
                                                 </div>
                                             </SelectItem>

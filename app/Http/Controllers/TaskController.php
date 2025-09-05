@@ -80,6 +80,8 @@ class TaskController extends Controller
             $task->image = $path;
         }
         $task->save();
+
+        return to_route('tasks.index');
     }
 
     /**
@@ -112,5 +114,15 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         //
+    }
+
+    public function updateStatus(Request $request, Task $task)
+    {
+        $task->status = 'completed';
+        $task->save();
+
+        $tasks = Task::where('user_id', auth()->id())->with(['priority', 'category'])->get();
+
+        return redirect()->route('tasks.index')->with('success', 'Task status updated successfully.');
     }
 }

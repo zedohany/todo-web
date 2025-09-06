@@ -81,7 +81,7 @@ class TaskController extends Controller
         }
         $task->save();
 
-        return to_route('tasks.index');
+        return to_route('tasks.index')->with('success', 'Task created successfully.');
     }
 
     /**
@@ -97,7 +97,17 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        if ($task->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+        if ($task->status === 'completed') {
+            return to_route('tasks.index')->with('error', 'Completed tasks cannot be edited.');
+        }
+        return Inertia::render('task/Edit')->with([
+            'task' => $task->load(['priority', 'category']),
+            'priorities' => Priority::where('user_id', auth()->id())->get(),
+            'categories' => Category::where('user_id', auth()->id())->get(),
+        ]);
     }
 
     /**
@@ -123,6 +133,6 @@ class TaskController extends Controller
 
         $tasks = Task::where('user_id', auth()->id())->with(['priority', 'category'])->get();
 
-        return redirect()->route('tasks.index')->with('success', 'Task status updated successfully.');
+        return to_route('tasks.index')->with('success', 'Task marked as completed.');
     }
 }

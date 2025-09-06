@@ -4,7 +4,7 @@ import { Head, usePage, router } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
 import { index } from '@/routes/tasks';
-import { create, updateStatus } from '@/routes/tasks';
+import { edit, create, updateStatus } from '@/routes/tasks';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import {
@@ -91,8 +91,8 @@ const makeComplete = (id: number) => {
     });
 };
 
-const getStatusVariant = (status: string) => {
-    const variants: { [key: string]: string } = {
+const getStatusVariant = (status: string): "default" | "destructive" | "outline" | "secondary" => {
+    const variants: { [key: string]: "default" | "destructive" | "outline" | "secondary" } = {
         'open': 'secondary',
         'completed': 'default',
         'closed': 'destructive'
@@ -103,6 +103,7 @@ const getStatusVariant = (status: string) => {
 </script>
 
 <template>
+
     <Head title="My Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -175,8 +176,7 @@ const getStatusVariant = (status: string) => {
                         <div class="relative h-48 -mt-6 overflow-hidden rounded-t-lg group">
                             <img v-if="task.image" :src="task.image" :alt="task.title"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            <div v-else
-                                class="w-full h-full bg-muted flex items-center justify-center">
+                            <div v-else class="w-full h-full bg-muted flex items-center justify-center">
                                 <Images class="w-16 h-16 dark:text-white opacity-60" />
                             </div>
 
@@ -214,10 +214,12 @@ const getStatusVariant = (status: string) => {
                                             <Eye class="w-4 h-4 mr-2" />
                                             View Details
                                         </DropdownMenuItem>
+                                        <Link class="w-full h-full" :href="edit(task.id).url">
                                         <DropdownMenuItem class="cursor-pointer">
                                             <FilePenLine class="w-4 h-4 mr-2" />
                                             Edit Task
                                         </DropdownMenuItem>
+                                        </Link>
                                         <DropdownMenuItem class="cursor-pointer text-destructive">
                                             <Trash class="w-4 h-4 mr-2" />
                                             Delete Task
@@ -263,8 +265,8 @@ const getStatusVariant = (status: string) => {
                                             :class="getDaysRemaining(task.deadline) < 0 ? 'border-destructive text-destructive' : getDaysRemaining(task.deadline) <= 3 ? 'border-yellow-500 text-yellow-600' : 'border-green-500 text-green-600'">
                                             {{ getDaysRemaining(task.deadline) < 0 ?
                                                 `${Math.abs(getDaysRemaining(task.deadline))} days overdue` :
-                                                getDaysRemaining(task.deadline)===0 ? 'Due today' :
-                                                `${getDaysRemaining(task.deadline)} days left` }} </Badge>
+                                                getDaysRemaining(task.deadline) === 0 ? 'Due today' :
+                                                    `${getDaysRemaining(task.deadline)} days left` }} </Badge>
                                     </div>
                                 </div>
                             </div>

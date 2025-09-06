@@ -17,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { toast } from "vue-sonner";
+// import { toast } from "vue-sonner";
 import Heading from '@/components/Heading.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -89,13 +89,13 @@ const handleImageUpload = (event: Event) => {
 const submitForm = () => {
     form.post('/tasks/create', {
         onSuccess: () => {
-            toast.success('Task has been created', {
-                description: 'The good news is that your task has been created successfully.',
-                action: {
-                    label: 'Close',
-                    onClick: () => console.log('Closed toast'),
-                },
-            })
+            // toast.success('Task has been created', {
+            //     description: 'The good news is that your task has been created successfully.',
+            //     action: {
+            //         label: 'Close',
+            //         onClick: () => console.log('Closed toast'),
+            //     },
+            // })
             form.reset();
         },
         onError: (errors) => {
